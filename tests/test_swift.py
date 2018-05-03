@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+import errno
 import unittest
 from mock import patch
 import keystoneauth1.exceptions
@@ -81,7 +83,8 @@ class SwiftTestCase(unittest.TestCase):
     @patch('swiftclient.Connection.head_container')
     @patch('builtins.open', create=True)
     @patch('swiftclient.Connection.put_object')
-    def test_put_object(self, mock_put_object, mock_open, mock_head_container, mock_getsize, mock_keystone):
+    def test_put_object(self, mock_put_object, mock_open, mock_head_container, mock_getsize,
+                        mock_keystone):
         mock_keystone.return_value.status_code = 200
         mock_getsize.return_value = 100
         mock_head_container.return_value = {"x-container-object-count": "99"}
@@ -103,10 +106,21 @@ class SwiftTestCase(unittest.TestCase):
         with self.assertRaises(swiftarchive.exceptions.SwiftException):
             swift.put_object("container", "object")
 
+        # Test FileNotFoundError raises SwiftException
         mock_getsize.return_value = 100
-        mock_open.side_effect = FileNotFoundError
+        mock_open.side_effect = FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), "object")
 
-        etag = swift.put_object("container", "object")
-        self.assertEquals(etag, None)
+        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+            swift.put_object("container", "object")
 
+        # Test PermissionError raises SwiftException
+        mock_open.side_effect = PermissionError(errno.ENOENT, os.strerror(errno.ENOENT), "object")
 
+        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+            swift.put_object("container", "object")
+
+        # Test Swift ClientException raises SwiftException
+        mock_open.side_effect = swiftclient.exceptions.ClientException(msg="Unknown")
+
+        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+            swift.put_object("container", "object")

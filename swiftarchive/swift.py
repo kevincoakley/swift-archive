@@ -80,8 +80,7 @@ class Swift:
         Upload an object
         :param os_container:
         :param os_object: path of the object to uploaded (The path will be replicated on Swift)
-        :return: The etag (md5 hash) will be returned if the upload was successful. None will be
-                 returned if there is an error.
+        :return: The etag (md5 hash) will be returned if the upload was successful.
         """
         if os.path.getsize(os_object) > 3500000000:
             raise SwiftException("Upload of \"%s\" failed. Files over 3.5GB not supported" %
@@ -100,6 +99,6 @@ class Swift:
         except FileNotFoundError:
             raise SwiftException("File \"%s\" could not be found" % os_object)
         except PermissionError:
-            return None
-        except swiftclient.exceptions.ClientException:
-            return None
+            raise SwiftException("Permission error with \"%s\"" % os_object)
+        except swiftclient.exceptions.ClientException as ex:
+            raise SwiftException("Swift Client Exception with \"%s\": %s" % (os_object, ex.msg))
