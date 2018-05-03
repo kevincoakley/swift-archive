@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import os
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from swiftclient import Connection
 
 from swiftarchive.exceptions import AuthException
+from swiftarchive.exceptions import SwiftException
 
 import keystoneauth1.exceptions
 import swiftclient.exceptions
@@ -54,5 +56,50 @@ class Swift:
                 return swift_conn.head_container(os_container)["x-container-object-count"]
             else:
                 return swift_conn.head_object(os_container, os_object)["etag"]
+        except swiftclient.exceptions.ClientException:
+            return None
+
+    def put_container(self, os_container):
+        """
+        Create a container
+        :param os_container: name of container to create
+        :return: True if container was created; false if an exception occurred
+        """
+        swift_conn = Connection(session=self.keystone_session)
+
+        try:
+            swift_conn.put_container(os_container)
+            swift_conn.close()
+            return True
+        except swiftclient.exceptions.ClientException:
+            swift_conn.close()
+            return False
+
+    def put_object(self, os_container, os_object):
+        """
+        Upload an object
+        :param os_container:
+        :param os_object: path of the object to uploaded (The path will be replicated on Swift)
+        :return: The etag (md5 hash) will be returned if the upload was successful. None will be
+                 returned if there is an error.
+        """
+        if os.path.getsize(os_object) > 3500000000:
+            raise SwiftException("Upload of \"%s\" failed. Files over 3.5GB not supported" %
+                                 os_object)
+
+        swift_conn = Connection(session=self.keystone_session)
+
+        if self.head(os_container) is None:
+            print("%s missing, creating container" % os_container)
+            if self.put_container(os_container) is False:
+                raise SwiftException("Container \"%s\" could not be created" % os_container)
+
+        try:
+            with open(os_object, 'rb') as local:
+                return swift_conn.put_object(os_container, os_object, contents=local)
+        except FileNotFoundError:
+            raise SwiftException("File \"%s\" could not be found" % os_object)
+        except PermissionError:
+            return None
         except swiftclient.exceptions.ClientException:
             return None
