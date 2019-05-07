@@ -81,7 +81,7 @@ class SwiftTestCase(unittest.TestCase):
     @patch('keystoneauth1.session.Session.get')
     @patch('os.path.getsize')
     @patch('swiftclient.Connection.head_container')
-    @patch('builtins.open', create=True)
+    @patch('future.builtins.open', create=True)
     @patch('swiftclient.Connection.put_object')
     def test_put_object(self, mock_put_object, mock_open, mock_head_container, mock_getsize,
                         mock_keystone):
@@ -108,13 +108,13 @@ class SwiftTestCase(unittest.TestCase):
 
         # Test FileNotFoundError raises SwiftException
         mock_getsize.return_value = 100
-        mock_open.side_effect = FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), "object")
+        mock_open.side_effect = OSError(errno.ENOENT, os.strerror(errno.ENOENT), "object")
 
         with self.assertRaises(swiftarchive.exceptions.SwiftException):
             swift.put_object("container", "object")
 
         # Test PermissionError raises SwiftException
-        mock_open.side_effect = PermissionError(errno.ENOENT, os.strerror(errno.ENOENT), "object")
+        mock_open.side_effect = OSError(errno.EACCES, os.strerror(errno.EACCES), "object")
 
         with self.assertRaises(swiftarchive.exceptions.SwiftException):
             swift.put_object("container", "object")

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import errno
+import future
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from swiftclient import Connection
@@ -94,11 +96,12 @@ class Swift:
                 raise SwiftException("Container \"%s\" could not be created" % os_container)
 
         try:
-            with open(os_object, 'rb') as local:
+            with future.builtins.open(os_object, 'rb') as local:
                 return swift_conn.put_object(os_container, os_object, contents=local)
-        except FileNotFoundError:
-            raise SwiftException("File \"%s\" could not be found" % os_object)
-        except PermissionError:
-            raise SwiftException("Permission error with \"%s\"" % os_object)
+        except OSError as ex:
+            if ex.errno == errno.ENOENT:
+                raise SwiftException("File \"%s\" could not be found" % os_object)
+            elif ex.errno == errno.EACCES:
+                raise SwiftException("Permission error with \"%s\"" % os_object)
         except swiftclient.exceptions.ClientException as ex:
             raise SwiftException("Swift Client Exception with \"%s\": %s" % (os_object, ex.msg))
