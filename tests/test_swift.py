@@ -57,6 +57,13 @@ class SwiftTestCase(unittest.TestCase):
 
         self.assertEqual(etag, "99999999999999999999999999999999")
 
+        # Test a swiftclient exception
+        mock_head_object.side_effect = swiftclient.exceptions.ClientException(msg="")
+
+        response = swift.head("container", "object")
+
+        self.assertEqual(response, None)
+
     @patch('keystoneauth1.session.Session.get')
     @patch('swiftclient.Connection.put_container')
     def test_put_container(self, mock_put_container, mock_keystone):
@@ -81,13 +88,27 @@ class SwiftTestCase(unittest.TestCase):
     @patch('keystoneauth1.session.Session.get')
     @patch('os.path.getsize')
     @patch('swiftclient.Connection.head_container')
+    @patch('swiftclient.Connection.put_container')
     @patch('future.builtins.open', create=True)
     @patch('swiftclient.Connection.put_object')
-    def test_put_object(self, mock_put_object, mock_open, mock_head_container, mock_getsize,
-                        mock_keystone):
+    def test_put_object(self, mock_put_object, mock_open, mock_put_container, mock_head_container,
+                        mock_getsize, mock_keystone):
         mock_keystone.return_value.status_code = 200
         mock_getsize.return_value = 100
         mock_head_container.return_value = {"x-container-object-count": "99"}
+
+        # Test automatically creating container before uploading
+        mock_head_container.side_effect = swiftclient.exceptions.ClientException(msg="")
+        mock_put_container.side_effect = swiftclient.exceptions.ClientException(msg="")
+
+        swift = Swift("username", "password", "project", "https://keystone:5000/v3")
+
+        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+            swift.put_object("container", "object")
+
+        # Reset side effects for next tests
+        mock_head_container.side_effect = None
+        mock_put_container.side_effect = None
 
         # Test uploading a small file
         mock_put_object.return_value = "99999999999999999999999999999999"
