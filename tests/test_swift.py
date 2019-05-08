@@ -97,20 +97,27 @@ class SwiftTestCase(unittest.TestCase):
         mock_getsize.return_value = 100
         mock_head_container.return_value = {"x-container-object-count": "99"}
 
-        # Test automatically creating container before uploading
+        #
+        # Test automatically creating container before uploading (failing test)
+        #
         mock_head_container.side_effect = swiftclient.exceptions.ClientException(msg="")
         mock_put_container.side_effect = swiftclient.exceptions.ClientException(msg="")
 
         swift = Swift("username", "password", "project", "https://keystone:5000/v3")
 
-        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+        with self.assertRaises(swiftarchive.exceptions.SwiftException) as se:
             swift.put_object("container", "object")
+
+        the_exception = se.exception
+        self.assertEqual(str(the_exception), "Container \"container\" could not be created")
 
         # Reset side effects for next tests
         mock_head_container.side_effect = None
         mock_put_container.side_effect = None
 
-        # Test uploading a small file
+        #
+        # Test uploading a small file (passing test)
+        #
         mock_put_object.return_value = "99999999999999999999999999999999"
 
         swift = Swift("username", "password", "project", "https://keystone:5000/v3")
@@ -119,29 +126,50 @@ class SwiftTestCase(unittest.TestCase):
 
         self.assertEqual(etag, "99999999999999999999999999999999")
 
-        # Test uploading a large file
+        #
+        # Test uploading a large file (failing test)
+        #
         mock_getsize.return_value = 3600000000
 
         swift = Swift("username", "password", "project", "https://keystone:5000/v3")
 
-        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+        with self.assertRaises(swiftarchive.exceptions.SwiftException) as se:
             swift.put_object("container", "object")
 
-        # Test FileNotFoundError raises SwiftException
+        the_exception = se.exception
+        self.assertEqual(str(the_exception), "Upload of \"object\" failed. Files over 3.5GB "
+                                             "not supported")
+
+        #
+        # Test FileNotFoundError raises SwiftException (failing test)
+        #
         mock_getsize.return_value = 100
         mock_open.side_effect = OSError(errno.ENOENT, os.strerror(errno.ENOENT), "object")
 
-        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+        with self.assertRaises(swiftarchive.exceptions.SwiftException) as se:
             swift.put_object("container", "object")
 
-        # Test PermissionError raises SwiftException
+        the_exception = se.exception
+        self.assertEqual(str(the_exception), "File \"object\" could not be found")
+
+        #
+        # Test PermissionError raises SwiftException (failing test)
+        #
         mock_open.side_effect = OSError(errno.EACCES, os.strerror(errno.EACCES), "object")
 
-        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+        with self.assertRaises(swiftarchive.exceptions.SwiftException) as se:
             swift.put_object("container", "object")
 
-        # Test Swift ClientException raises SwiftException
+        the_exception = se.exception
+        self.assertEqual(str(the_exception), "Permission error with \"object\"")
+
+        #
+        # Test Swift ClientException raises SwiftException (failing test)
+        #
         mock_open.side_effect = swiftclient.exceptions.ClientException(msg="Unknown")
 
-        with self.assertRaises(swiftarchive.exceptions.SwiftException):
+        with self.assertRaises(swiftarchive.exceptions.SwiftException) as se:
             swift.put_object("container", "object")
+
+        the_exception = se.exception
+        self.assertEqual(str(the_exception), "Swift Client Exception with \"object\": Unknown")
