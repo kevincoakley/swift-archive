@@ -112,11 +112,26 @@ class SwiftTestCase(unittest.TestCase):
         self.assertEqual(str(the_exception), "Container \"container\" could not be created")
 
         # Reset side effects for next tests
+        mock_head_container.side_effect = swiftclient.exceptions.ClientException(msg="")
+        mock_put_container.side_effect = None
+
+        #
+        # Test uploading a small file w/ creating container (passing test)
+        #
+        mock_put_object.return_value = "99999999999999999999999999999999"
+
+        swift = Swift("username", "password", "project", "https://keystone:5000/v3")
+
+        etag = swift.put_object("container", "object")
+
+        self.assertEqual(etag, "99999999999999999999999999999999")
+
+        # Reset side effects for next tests
         mock_head_container.side_effect = None
         mock_put_container.side_effect = None
 
         #
-        # Test uploading a small file (passing test)
+        # Test uploading a small file w/ existing container (passing test)
         #
         mock_put_object.return_value = "99999999999999999999999999999999"
 
@@ -173,3 +188,14 @@ class SwiftTestCase(unittest.TestCase):
 
         the_exception = se.exception
         self.assertEqual(str(the_exception), "Swift Client Exception with \"object\": Unknown")
+
+        #
+        # Test Input/Output Error raises Unknown SwiftException (failing test)
+        #
+        mock_open.side_effect = OSError(errno.EIO, os.strerror(errno.EIO), "io_error")
+
+        with self.assertRaises(swiftarchive.exceptions.SwiftException) as se:
+            swift.put_object("container", "object")
+
+        the_exception = se.exception
+        self.assertEqual(str(the_exception), "Unknown error with \"object\": Input/output error")

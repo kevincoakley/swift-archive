@@ -50,6 +50,8 @@ class Files:
                 raise LocalFileException("File \"%s\" could not be found" % file_path)
             elif ex.errno == errno.EACCES:
                 raise LocalFileException("Permission error with \"%s\"" % file_path)
+            else:
+                raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror))
 
         # If the file is older than seconds_since_updated then return True
         if time.time() - mtime > seconds_since_updated:
@@ -74,5 +76,7 @@ class Files:
                 raise LocalFileException("File \"%s\" could not be found" % file_path)
             elif ex.errno == errno.EACCES:
                 raise LocalFileException("Permission error with \"%s\"" % file_path)
+            else:
+                raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror))
 
         return hash_md5.hexdigest()

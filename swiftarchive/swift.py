@@ -102,5 +102,7 @@ class Swift:
                 raise SwiftException("File \"%s\" could not be found" % os_object)
             elif ex.errno == errno.EACCES:
                 raise SwiftException("Permission error with \"%s\"" % os_object)
+            else:
+                raise SwiftException("Unknown error with \"%s\": %s" % (os_object, ex.strerror))
         except swiftclient.exceptions.ClientException as ex:
             raise SwiftException("Swift Client Exception with \"%s\": %s" % (os_object, ex.msg))

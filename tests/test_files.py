@@ -20,7 +20,9 @@ class FilesTestCase(unittest.TestCase):
     def test_get_files(self, mock_walk, mock_modified):
         files = Files()
 
-        # Make swiftarchive.files.check_modified_time always return True
+        #
+        # Test get_files when check_modified_time is always True
+        #
         mock_modified.return_value = True
 
         mock_walk.return_value = [
@@ -40,6 +42,15 @@ class FilesTestCase(unittest.TestCase):
             '/tmp/backup/20190101-01.gz',
             '/tmp/backup/20190101-02.gz'
         ])
+
+        #
+        # Test get_files when check_modified_time is always False
+        #
+        mock_modified.return_value = False
+
+        tmp = files.get_files("/tmp/")
+
+        self.assertEqual(tmp, [])
 
     @patch('os.path.getmtime')
     def test_check_modified_time(self, mock_mtime):
@@ -81,6 +92,17 @@ class FilesTestCase(unittest.TestCase):
         the_exception = lfe.exception
         self.assertEqual(str(the_exception), "Permission error with \"permission_file\"")
 
+        #
+        # Test Input/Output Error raises Unknown LocalFileException (failing test)
+        #
+        mock_mtime.side_effect = OSError(errno.EIO, os.strerror(errno.EIO), "io_error")
+
+        with self.assertRaises(swiftarchive.exceptions.LocalFileException) as lfe:
+            files.check_modified_time("io_error", 300)
+
+        the_exception = lfe.exception
+        self.assertEqual(str(the_exception), "Unknown error with \"io_error\": Input/output error")
+
     def test_md5_hash(self):
         # Test the md5 hash calculation on an actual file
         calculated_md5_hash = "0d8591aa95f4d56cd91d58d92a700a18"
@@ -118,3 +140,14 @@ class FilesTestCase(unittest.TestCase):
 
         the_exception = lfe.exception
         self.assertEqual(str(the_exception), "Permission error with \"md5_permission\"")
+
+        #
+        # Test Input/Output Error raises Unknown LocalFileException (failing test)
+        #
+        mock_open.side_effect = OSError(errno.EIO, os.strerror(errno.EIO), "io_error")
+
+        with self.assertRaises(swiftarchive.exceptions.LocalFileException) as lfe:
+            files.md5("io_error")
+
+        the_exception = lfe.exception
+        self.assertEqual(str(the_exception), "Unknown error with \"io_error\": Input/output error")
