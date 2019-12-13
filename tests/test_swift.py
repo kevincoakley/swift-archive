@@ -89,7 +89,7 @@ class SwiftTestCase(unittest.TestCase):
     @patch('os.path.getsize')
     @patch('swiftclient.Connection.head_container')
     @patch('swiftclient.Connection.put_container')
-    @patch('future.builtins.open', create=True)
+    @patch('swiftarchive.swift.open', create=True)
     @patch('swiftclient.Connection.put_object')
     def test_put_object(self, mock_put_object, mock_open, mock_put_container, mock_head_container,
                         mock_getsize, mock_keystone):

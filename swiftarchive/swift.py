@@ -2,7 +2,6 @@
 
 import os
 import errno
-import future
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from swiftclient import Connection
@@ -96,7 +95,7 @@ class Swift:
                 raise SwiftException("Container \"%s\" could not be created" % os_container)
 
         try:
-            with future.builtins.open(os_object, 'rb') as local:
+            with open(os_object, 'rb') as local:
                 return swift_conn.put_object(os_container, os_object, contents=local)
         except OSError as ex:
             if ex.errno == errno.ENOENT:

@@ -1,3 +1,2 @@
 python-swiftclient
 keystoneauth1
-future
