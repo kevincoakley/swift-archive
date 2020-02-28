@@ -25,9 +25,8 @@ class ShellTestCase(unittest.TestCase):
 
     def test_main(self):
         # Test that SystemExit is raised when the required args are not passed
-        with self.assertRaises(SystemExit):
-            with patch.object(sys, 'argv', ["swift-archive", "--container", "test"]):
-                shell.main()
+        with patch.object(sys, 'argv', ["swift-archive", "--container", "test"]):
+            self.assertRegex(shell.main(), "^\nswift-archive requires")
 
         # Test with command line arguments
         with patch.object(sys, 'argv', ["swift-archive",
