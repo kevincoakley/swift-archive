@@ -2,12 +2,14 @@
 
 import sys
 import logging
-import swiftarchive.arguments as arguments
+import swiftarchive.arguments
 
 
 def main():
-
-    args = arguments.parse_arguments(sys.argv[1:])
+    """
+    :return: 0 if successful otherwise return an error message as a string
+    """
+    args = swiftarchive.arguments.parse_arguments(sys.argv[1:])
 
     log_level = logging.INFO
 

@@ -5,6 +5,11 @@ import argparse
 
 
 def parse_arguments(args):
+    """
+    Parse Commandline Arguments
+    :param args: *args positional arguments
+    :return: Commandline arguments parsed by argparse
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--debug',
