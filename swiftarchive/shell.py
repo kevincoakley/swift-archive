@@ -29,8 +29,10 @@ def main():
     if args.os_username is None or args.os_password is None or \
         args.os_project_name is None or args.os_auth_url is None or \
             args.container is None or args.archive_path is None:
-        sys.exit('''
+        return ('''
 swift-archive requires OS_USERNAME, OS_PASSWORD, OS_PROJECT_NAME,
 OS_AUTH_URL, CONTAINER, and ARCHIVE_PATH to be set or overridden with
 --os-username, --os-password, --os-project-name, --os-auth-url,
 --container, or --archive-path.''')
+
+    return 0
