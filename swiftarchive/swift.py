@@ -37,9 +37,9 @@ class Swift:
             self.keystone_session.get(os_auth_url)
 
         except keystoneauth1.exceptions.http.Unauthorized:
-            raise AuthException("Unauthorized")
+            raise AuthException("Unauthorized") from None
         except keystoneauth1.exceptions.connection.ConnectFailure:
-            raise AuthException("Unable to establish connection")
+            raise AuthException("Unable to establish connection") from None
 
     def head(self, os_container, os_object=None):
         """
@@ -85,24 +85,24 @@ class Swift:
         """
         if os.path.getsize(os_object) > 3500000000:
             raise SwiftException("Upload of \"%s\" failed. Files over 3.5GB not supported" %
-                                 os_object)
+                                 os_object) from None
 
         swift_conn = Connection(session=self.keystone_session)
 
         if self.head(os_container) is None:
             print("%s missing, creating container" % os_container)
             if self.put_container(os_container) is False:
-                raise SwiftException("Container \"%s\" could not be created" % os_container)
+                raise SwiftException("Container \"%s\" could not be created" % os_container) from None
 
         try:
             with open(os_object, 'rb') as local:
                 return swift_conn.put_object(os_container, os_object, contents=local)
         except OSError as ex:
             if ex.errno == errno.ENOENT:
-                raise SwiftException("File \"%s\" could not be found" % os_object)
+                raise SwiftException("File \"%s\" could not be found" % os_object) from None
             elif ex.errno == errno.EACCES:
-                raise SwiftException("Permission error with \"%s\"" % os_object)
+                raise SwiftException("Permission error with \"%s\"" % os_object) from None
             else:
-                raise SwiftException("Unknown error with \"%s\": %s" % (os_object, ex.strerror))
+                raise SwiftException("Unknown error with \"%s\": %s" % (os_object, ex.strerror)) from None
         except swiftclient.exceptions.ClientException as ex:
-            raise SwiftException("Swift Client Exception with \"%s\": %s" % (os_object, ex.msg))
+            raise SwiftException("Swift Client Exception with \"%s\": %s" % (os_object, ex.msg)) from None

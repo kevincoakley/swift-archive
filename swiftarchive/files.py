@@ -47,11 +47,11 @@ class Files:
             mtime = os.path.getmtime(file_path)
         except OSError as ex:
             if ex.errno == errno.ENOENT:
-                raise LocalFileException("File \"%s\" could not be found" % file_path)
+                raise LocalFileException("File \"%s\" could not be found" % file_path) from None
             elif ex.errno == errno.EACCES:
-                raise LocalFileException("Permission error with \"%s\"" % file_path)
+                raise LocalFileException("Permission error with \"%s\"" % file_path) from None
             else:
-                raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror))
+                raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror)) from None
 
         # If the file is older than seconds_since_updated then return True
         if time.time() - mtime > seconds_since_updated:
@@ -73,10 +73,10 @@ class Files:
                     hash_md5.update(chunk)
         except OSError as ex:
             if ex.errno == errno.ENOENT:
-                raise LocalFileException("File \"%s\" could not be found" % file_path)
+                raise LocalFileException("File \"%s\" could not be found" % file_path) from None
             elif ex.errno == errno.EACCES:
-                raise LocalFileException("Permission error with \"%s\"" % file_path)
+                raise LocalFileException("Permission error with \"%s\"" % file_path) from None
             else:
-                raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror))
+                raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror)) from None
 
         return hash_md5.hexdigest()
