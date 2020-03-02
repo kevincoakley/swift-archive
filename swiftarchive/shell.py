@@ -3,6 +3,9 @@
 import sys
 import logging
 import swiftarchive.arguments
+import swiftarchive.files
+import swiftarchive.swift
+from swiftarchive.exceptions import SwiftException
 
 
 def main():
@@ -36,5 +39,29 @@ swift-archive requires OS_USERNAME, OS_PASSWORD, OS_PROJECT_NAME,
 OS_AUTH_URL, CONTAINER, and ARCHIVE_PATH to be set or overridden with
 --os-username, --os-password, --os-project-name, --os-auth-url,
 --container, or --archive-path.''')
+
+    # Create the Swift object and authenticate to the server
+    swift = swiftarchive.swift.Swift(args.os_username, args.os_password, args.os_project_name, args.os_auth_url)
+
+    # Create the Files object and get the list of files to upload to Swift
+    files = swiftarchive.files.Files()
+    file_list = files.get_files(args.archive_path, seconds_since_updated=args.seconds_since_updated)
+    logging.debug("file list: %s", file_list)
+
+    # Upload files in file_list
+    for file_path in file_list:
+        logging.debug("file: %s", file_path)
+
+        # Calculate the md5 sum for file_path
+        file_md5 = files.md5(file_path)
+        logging.debug("file md5: %s", file_md5)
+
+        # Upload file_path to Swift
+        swift_md5 = swift.put_object(args.container, file_path)
+        logging.debug("swift list: %s", file_list)
+
+        if file_md5 != swift_md5:
+            raise SwiftException("md5 sum does not match for file \"%s\" file: %s swift: %s" %
+                                 (file_path, file_md5, swift_md5)) from None
 
     return 0
