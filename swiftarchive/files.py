@@ -26,9 +26,11 @@ class Files:
                 # Construct the full path to the file
                 file_path = os.path.join(root, file)
 
-                # If the file is older than seconds_since_updated then add it to file_list
-                if self.check_modified_time(file_path, seconds_since_updated):
-                    file_list.append(file_path)
+                # Exclude symlinks
+                if os.path.islink(file_path) is False:
+                    # If the file is older than seconds_since_updated then add it to file_list
+                    if self.check_modified_time(file_path, seconds_since_updated):
+                        file_list.append(file_path)
 
         return file_list
 

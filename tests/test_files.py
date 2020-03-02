@@ -10,14 +10,22 @@ import swiftarchive.exceptions
 from swiftarchive.files import Files
 
 
+def side_effect_islink(file_path):
+    if file_path == "/tmp/symlink":
+        return True
+    else:
+        return False
+
+
 class FilesTestCase(unittest.TestCase):
 
     def setUp(self):
         pass
 
     @patch.object(Files, 'check_modified_time')
+    @patch('os.path.islink')
     @patch('os.walk')
-    def test_get_files(self, mock_walk, mock_modified):
+    def test_get_files(self, mock_walk, mock_islink, mock_modified):
         files = Files()
 
         #
@@ -26,9 +34,11 @@ class FilesTestCase(unittest.TestCase):
         mock_modified.return_value = True
 
         mock_walk.return_value = [
-            ('/tmp', ('backup',), ('20190101-00.gz', '20190101-01.gz', '20190101-02.gz', 'a.txt', 'b.txt')),
+            ('/tmp', ('backup',), ('20190101-00.gz', '20190101-01.gz', '20190101-02.gz', 'a.txt', 'b.txt', 'symlink')),
             ('/tmp/backup', (), ('20190101-00.gz', '20190101-01.gz', '20190101-02.gz')),
         ]
+
+        mock_islink.side_effect = side_effect_islink
 
         tmp = files.get_files("/tmp/")
 
