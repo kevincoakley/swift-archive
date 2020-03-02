@@ -55,11 +55,14 @@ class Files:
             else:
                 raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror)) from None
 
-        # If the file is older than seconds_since_updated then return True
-        if time.time() - mtime > seconds_since_updated:
-            return True
-        else:
-            return False
+        try:
+            # If the file is older than seconds_since_updated then return True
+            if time.time() - mtime > float(seconds_since_updated):
+                return True
+            else:
+                return False
+        except ValueError:
+            raise LocalFileException("Invalid seconds_since_updated: %s" % seconds_since_updated) from None
 
     @staticmethod
     def md5(file_path):

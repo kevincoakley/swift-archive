@@ -113,6 +113,17 @@ class FilesTestCase(unittest.TestCase):
         the_exception = lfe.exception
         self.assertEqual(str(the_exception), "Unknown error with \"io_error\": Input/output error")
 
+        #
+        # Test a string seconds_since_updated value raises LocalFileException (failing test)
+        #
+        mock_mtime.side_effect = None
+
+        with self.assertRaises(swiftarchive.exceptions.LocalFileException) as lfe:
+            files.check_modified_time("string_seconds_since_updated", "string")
+
+        the_exception = lfe.exception
+        self.assertEqual(str(the_exception), "Invalid seconds_since_updated: string")
+
     def test_md5_hash(self):
         # Test the md5 hash calculation on an actual file
         calculated_md5_hash = "0d8591aa95f4d56cd91d58d92a700a18"
