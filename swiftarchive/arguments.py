@@ -56,6 +56,6 @@ def parse_arguments(args):
                         metavar="seconds_since_updated",
                         dest="seconds_since_updated",
                         help="Archive All Files That Haven't Been Updated Since in Seconds.",
-                        default=os.environ.get('SECONDS_SINCE_UPDATED', None))
+                        default=os.environ.get('SECONDS_SINCE_UPDATED', 0))
 
     return parser.parse_args(args)
