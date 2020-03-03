@@ -47,8 +47,7 @@ OS_AUTH_URL, CONTAINER, and ARCHIVE_PATH to be set or overridden with
     swift = swiftarchive.swift.Swift(args.os_username, args.os_password, args.os_project_name, args.os_auth_url)
 
     # Create the Files object and get the list of files to upload to Swift
-    files = swiftarchive.files.Files()
-    file_list = files.get_files(args.archive_path, seconds_since_updated=args.seconds_since_updated)
+    file_list = swiftarchive.files.get_files(args.archive_path, seconds_since_updated=args.seconds_since_updated)
     logger.debug("\n".join("{}: {}".format(*k) for k in enumerate(file_list)))
 
     # Upload files in file_list
@@ -56,7 +55,7 @@ OS_AUTH_URL, CONTAINER, and ARCHIVE_PATH to be set or overridden with
         logger.debug("file: %s", file_path)
 
         # Calculate the md5 sum for file_path
-        file_md5 = files.md5(file_path)
+        file_md5 = swiftarchive.files.md5(file_path)
         logger.debug(" file md5: %s", file_md5)
 
         # Upload file_path to Swift

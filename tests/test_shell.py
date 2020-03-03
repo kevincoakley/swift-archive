@@ -6,8 +6,8 @@ import unittest
 from mock import patch
 import swiftarchive.shell as shell
 import swiftarchive.exceptions
+import swiftarchive.files
 
-from swiftarchive.files import Files
 from swiftarchive.swift import Swift
 
 
@@ -27,9 +27,9 @@ class ShellTestCase(unittest.TestCase):
         if "ARCHIVE_PATH" in os.environ:
             del os.environ["ARCHIVE_PATH"]
 
-    @patch.object(Files, 'md5')
+    @patch('swiftarchive.files.md5')
     @patch.object(Swift, 'put_object')
-    @patch.object(Files, 'get_files')
+    @patch('swiftarchive.files.get_files')
     @patch.object(Swift, '__init__')
     def test_main(self, mock_swift_init, mock_get_files, mock_put_object, mock_md5):
 
