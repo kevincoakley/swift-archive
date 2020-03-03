@@ -55,7 +55,7 @@ def parse_arguments(args):
     parser.add_argument('--delete',
                         dest="delete",
                         help="Delete Local Files Once Uploaded to Swift.",
-                        action='store_false',
+                        action='store_true',
                         default=os.environ.get('LOCAL_DELETE', False))
 
     parser.add_argument("--seconds-since-updated",
