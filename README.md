@@ -21,6 +21,7 @@ Command line options and environment variables:
     --os-auth-url [OS_AUTH_URL] - OpenStack Keystone Auth URL. (Required)
     --container [CONTAINER] - OpenStack Swift Container. (Required)
     --archive-path [ARCHIVE_PATH] - Local Path to Archive to OpenStack Swift. (Required)
+    --delete [LOCAL_DELETE] - Delete Local Files Once Uploaded to Swift. (Default False)
     --seconds-since-updated [SECONDS_SINCE_UPDATED] - Archive All Files That Haven't Been Updated Since in Seconds. (Default 0)
 
 Build swift-archive into a Docker container:
@@ -38,6 +39,7 @@ Run swift-archive from a Docker container:
     -e OS_AUTH_URL='https://keystone:5000' \
     -e CONTAINER='container' \
     -e ARCHIVE_PATH='/swift-archive/' \
+    -e LOCAL_DELETE='/False/' \
     -e SECONDS_SINCE_UPDATED='600' \
     -v '/local/path:/swift-archive/' \
     swift-archive

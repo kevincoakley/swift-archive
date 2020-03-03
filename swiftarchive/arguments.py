@@ -52,6 +52,12 @@ def parse_arguments(args):
                         help="Local Path to Archive to OpenStack Swift.",
                         default=os.environ.get('ARCHIVE_PATH', None))
 
+    parser.add_argument('--delete',
+                        dest="delete",
+                        help="Delete Local Files Once Uploaded to Swift.",
+                        action='store_false',
+                        default=os.environ.get('LOCAL_DELETE', False))
+
     parser.add_argument("--seconds-since-updated",
                         metavar="seconds_since_updated",
                         dest="seconds_since_updated",

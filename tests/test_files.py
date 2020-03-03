@@ -163,3 +163,49 @@ class FilesTestCase(unittest.TestCase):
 
         the_exception = lfe.exception
         self.assertEqual(str(the_exception), "Unknown error with \"io_error\": Input/output error")
+
+    @patch('os.remove')
+    def test_delete(self, mock_remove):
+        #
+        # Test IsADirectoryError raises LocalFileException (failing test)
+        #
+        mock_remove.side_effect = OSError(errno.EISDIR, os.strerror(errno.EISDIR), "delete_directory")
+
+        with self.assertRaises(swiftarchive.exceptions.LocalFileException) as lfe:
+            swiftarchive.files.delete("delete_directory")
+
+        the_exception = lfe.exception
+        self.assertEqual(str(the_exception), "Path \"delete_directory\" is a directory and will not be deleted")
+
+        #
+        # Test FileNotFoundError raises LocalFileException (failing test)
+        #
+        mock_remove.side_effect = OSError(errno.ENOENT, os.strerror(errno.ENOENT), "delete_not_found")
+
+        with self.assertRaises(swiftarchive.exceptions.LocalFileException) as lfe:
+            swiftarchive.files.delete("delete_not_found")
+
+        the_exception = lfe.exception
+        self.assertEqual(str(the_exception), "File \"delete_not_found\" could not be found")
+
+        #
+        # Test PermissionError raises LocalFileException (failing test)
+        #
+        mock_remove.side_effect = OSError(errno.EACCES, os.strerror(errno.EACCES), "delete_permission")
+
+        with self.assertRaises(swiftarchive.exceptions.LocalFileException) as lfe:
+            swiftarchive.files.delete("delete_permission")
+
+        the_exception = lfe.exception
+        self.assertEqual(str(the_exception), "Permission error with \"delete_permission\"")
+
+        #
+        # Test Input/Output Error raises Unknown LocalFileException (failing test)
+        #
+        mock_remove.side_effect = OSError(errno.EIO, os.strerror(errno.EIO), "io_error")
+
+        with self.assertRaises(swiftarchive.exceptions.LocalFileException) as lfe:
+            swiftarchive.files.delete("io_error")
+
+        the_exception = lfe.exception
+        self.assertEqual(str(the_exception), "Unknown error with \"io_error\": Input/output error")

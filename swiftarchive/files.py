@@ -80,3 +80,21 @@ def md5(file_path):
             raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror)) from None
 
     return hash_md5.hexdigest()
+
+
+def delete(file_path):
+    """
+    :param file_path: Path to the file
+    :return: md5 hash of file_path
+    """
+    try:
+        return os.remove(file_path)
+    except OSError as ex:
+        if ex.errno == errno.EISDIR:
+            raise LocalFileException("Path \"%s\" is a directory and will not be deleted" % file_path) from None
+        if ex.errno == errno.ENOENT:
+            raise LocalFileException("File \"%s\" could not be found" % file_path) from None
+        elif ex.errno == errno.EACCES:
+            raise LocalFileException("Permission error with \"%s\"" % file_path) from None
+        else:
+            raise LocalFileException("Unknown error with \"%s\": %s" % (file_path, ex.strerror)) from None

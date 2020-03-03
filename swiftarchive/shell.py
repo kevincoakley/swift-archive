@@ -32,6 +32,7 @@ def main():
     logger.debug("os_auth_url: %s", args.os_auth_url)
     logger.debug("container: %s", args.container)
     logger.debug("archive_path: %s", args.archive_path)
+    logger.debug("delete: %s", args.delete)
     logger.debug("seconds_since_updated: %s", args.seconds_since_updated)
 
     if args.os_username is None or args.os_password is None or \
@@ -62,7 +63,11 @@ OS_AUTH_URL, CONTAINER, and ARCHIVE_PATH to be set or overridden with
         swift_md5 = swift.put_object(args.container, file_path, args.archive_path)
         logger.debug("swift md5: %s", swift_md5)
 
-        if file_md5 != swift_md5:
+        if file_md5 == swift_md5:
+            if str(args.delete).lower() == "true":
+                logger.debug("deleting: %s", file_path)
+                swiftarchive.files.delete(file_path)
+        else:
             raise SwiftException("md5 sum does not match for file \"%s\" file: %s swift: %s" %
                                  (file_path, file_md5, swift_md5)) from None
 

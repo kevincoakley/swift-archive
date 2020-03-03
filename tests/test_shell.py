@@ -27,11 +27,12 @@ class ShellTestCase(unittest.TestCase):
         if "ARCHIVE_PATH" in os.environ:
             del os.environ["ARCHIVE_PATH"]
 
+    @patch('swiftarchive.files.delete')
     @patch('swiftarchive.files.md5')
     @patch.object(Swift, 'put_object')
     @patch('swiftarchive.files.get_files')
     @patch.object(Swift, '__init__')
-    def test_main(self, mock_swift_init, mock_get_files, mock_put_object, mock_md5):
+    def test_main(self, mock_swift_init, mock_get_files, mock_put_object, mock_md5, mock_delete):
 
         mock_swift_init.return_value = None
 
@@ -97,3 +98,14 @@ class ShellTestCase(unittest.TestCase):
             self.assertEqual(str(the_exception), "md5 sum does not match for file \"/tmp/mock.txt\" file: "
                                                  "123456abcdefghijklmnopqrstuvwxyz swift: "
                                                  "abcdefghijklmnopqrstuvwxyz123456")
+
+        #
+        # Test delete files
+        #
+        with patch.object(sys, 'argv', ["swift-archive", "--delete"]):
+            mock_get_files.return_value = ['/tmp/mock.txt']
+            mock_put_object.return_value = "abcdefghijklmnopqrstuvwxyz123456"
+            mock_md5.return_value = "abcdefghijklmnopqrstuvwxyz123456"
+            mock_delete.return_value = True
+
+            shell.main()
