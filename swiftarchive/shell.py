@@ -57,7 +57,7 @@ OS_AUTH_URL, CONTAINER, and ARCHIVE_PATH to be set or overridden with
         logging.debug("file md5: %s", file_md5)
 
         # Upload file_path to Swift
-        swift_md5 = swift.put_object(args.container, file_path)
+        swift_md5 = swift.put_object(args.container, file_path, args.archive_path)
         logging.debug("swift list: %s", file_list)
 
         if file_md5 != swift_md5:

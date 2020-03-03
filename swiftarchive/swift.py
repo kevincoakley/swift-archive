@@ -76,11 +76,12 @@ class Swift:
             swift_conn.close()
             return False
 
-    def put_object(self, os_container, os_object):
+    def put_object(self, os_container, os_object, strip_path=""):
         """
         Upload an object
         :param os_container:
         :param os_object: path of the object to uploaded (The path will be replicated on Swift)
+        :param strip_path: Remove the strip_path from the start of the os_object path when uploading to Swift
         :return: The etag (md5 hash) will be returned if the upload was successful.
         """
         if os.path.getsize(os_object) > 3500000000:
@@ -96,7 +97,7 @@ class Swift:
 
         try:
             with open(os_object, 'rb') as local:
-                return swift_conn.put_object(os_container, os_object, contents=local)
+                return swift_conn.put_object(os_container, os_object[len(strip_path) + 1:], contents=local)
         except OSError as ex:
             if ex.errno == errno.ENOENT:
                 raise SwiftException("File \"%s\" could not be found" % os_object) from None
