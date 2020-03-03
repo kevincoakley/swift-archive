@@ -2,6 +2,7 @@
 
 import os
 import errno
+import logging
 from keystoneauth1 import session
 from keystoneauth1.identity import v3
 from swiftclient import Connection
@@ -11,6 +12,8 @@ from swiftarchive.exceptions import SwiftException
 
 import keystoneauth1.exceptions
 import swiftclient.exceptions
+
+logger = logging.getLogger('swiftarchive.swift')
 
 
 class Swift:
@@ -91,7 +94,7 @@ class Swift:
         swift_conn = Connection(session=self.keystone_session)
 
         if self.head(os_container) is None:
-            print("%s missing, creating container" % os_container)
+            logger.debug("swift container %s missing, creating container" % os_container)
             if self.put_container(os_container) is False:
                 raise SwiftException("Container \"%s\" could not be created" % os_container) from None
 

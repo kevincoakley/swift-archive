@@ -19,17 +19,20 @@ def main():
     if args.debug is True:
         log_level = logging.DEBUG
 
-    logging.basicConfig(level=log_level,
-                        format='%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s',
-                        handlers=[logging.StreamHandler()])
+    logger = logging.getLogger('swiftarchive')
+    logger.setLevel(level=log_level)
+    log_handler = logging.StreamHandler()
+    log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s')
+    log_handler.setFormatter(log_formatter)
+    logger.addHandler(log_handler)
 
-    logging.debug("os_username: %s", args.os_username)
-    logging.debug("os_password: %s", args.os_password)
-    logging.debug("os_project_name: %s", args.os_project_name)
-    logging.debug("os_auth_url: %s", args.os_auth_url)
-    logging.debug("container: %s", args.container)
-    logging.debug("archive_path: %s", args.archive_path)
-    logging.debug("seconds_since_updated: %s", args.seconds_since_updated)
+    logger.debug("os_username: %s", args.os_username)
+    logger.debug("os_password: %s", args.os_password)
+    logger.debug("os_project_name: %s", args.os_project_name)
+    logger.debug("os_auth_url: %s", args.os_auth_url)
+    logger.debug("container: %s", args.container)
+    logger.debug("archive_path: %s", args.archive_path)
+    logger.debug("seconds_since_updated: %s", args.seconds_since_updated)
 
     if args.os_username is None or args.os_password is None or \
         args.os_project_name is None or args.os_auth_url is None or \
@@ -46,19 +49,19 @@ OS_AUTH_URL, CONTAINER, and ARCHIVE_PATH to be set or overridden with
     # Create the Files object and get the list of files to upload to Swift
     files = swiftarchive.files.Files()
     file_list = files.get_files(args.archive_path, seconds_since_updated=args.seconds_since_updated)
-    logging.debug("file list: %s", file_list)
+    logger.debug("\n".join("{}: {}".format(*k) for k in enumerate(file_list)))
 
     # Upload files in file_list
     for file_path in file_list:
-        logging.debug("file: %s", file_path)
+        logger.debug("file: %s", file_path)
 
         # Calculate the md5 sum for file_path
         file_md5 = files.md5(file_path)
-        logging.debug("file md5: %s", file_md5)
+        logger.debug(" file md5: %s", file_md5)
 
         # Upload file_path to Swift
         swift_md5 = swift.put_object(args.container, file_path, args.archive_path)
-        logging.debug("swift list: %s", file_list)
+        logger.debug("swift md5: %s", swift_md5)
 
         if file_md5 != swift_md5:
             raise SwiftException("md5 sum does not match for file \"%s\" file: %s swift: %s" %
