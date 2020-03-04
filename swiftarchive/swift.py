@@ -100,7 +100,7 @@ class Swift:
 
         try:
             with open(os_object, 'rb') as local:
-                return swift_conn.put_object(os_container, os_object[len(strip_path) + 1:], contents=local)
+                return swift_conn.put_object(os_container, os_object[len(strip_path):], contents=local)
         except OSError as ex:
             if ex.errno == errno.ENOENT:
                 raise SwiftException("File \"%s\" could not be found" % os_object) from None
