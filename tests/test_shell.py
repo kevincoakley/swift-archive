@@ -37,7 +37,7 @@ class ShellTestCase(unittest.TestCase):
         mock_swift_init.return_value = None
 
         #
-        # Test that SystemExit is raised when the required args are not passed
+        # Test that an error message is returned when the required args are not passed
         #
         with patch.object(sys, 'argv', ["swift-archive", "--container", "test"]):
             self.assertRegex(shell.main(), "^\nswift-archive requires")

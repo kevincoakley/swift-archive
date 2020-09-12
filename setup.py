@@ -20,7 +20,7 @@ def readme():
 
 
 setup(name="openstack-swift-archive",
-      version="1.0.0",
+      version="1.0.2",
       description="",
       long_description=readme(),
       author="Kevin Coakley",
