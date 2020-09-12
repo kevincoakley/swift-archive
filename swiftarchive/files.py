@@ -92,7 +92,7 @@ def delete(file_path):
     except OSError as ex:
         if ex.errno == errno.EISDIR:
             raise LocalFileException("Path \"%s\" is a directory and will not be deleted" % file_path) from None
-        if ex.errno == errno.ENOENT:
+        elif ex.errno == errno.ENOENT:
             raise LocalFileException("File \"%s\" could not be found" % file_path) from None
         elif ex.errno == errno.EACCES:
             raise LocalFileException("Permission error with \"%s\"" % file_path) from None
